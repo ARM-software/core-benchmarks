@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package frontend_benchmark;
+
+// CodeBlock represents an arbitrary set of instructions, optionally terminated
+// by a branch instruction. The body of the code block can contain local
+// control flow and is specified in C or assembly.
+message CodeBlock {
+  int64 id = 1;
+  int64 code_block_body_id = 2;
+  Branch terminator_branch = 3;
+  int64 unroll_factor = 4;
+}
+
+// The body of a CodeBlock. The "instructions" field is expected to be valid C
+// or assembly. Note: you can use inline assembly syntax to write assembly as C
+// for easier integration with other code.
+message CodeBlockBody {
+  int64 id = 1;
+  string instructions = 2;
+}
+
+// A function consists of an ordered list of CodeBlocks.
+message Function {
+  int64 id = 1;
+  // The function signature must be separately specified in order to generate
+  // headers.
+  CodeBlock signature = 2;
+  repeated CodeBlock instructions = 3;
+}
+
+// A branch connects two CodeBlocks. If a code block is expected to fallthrough
+// to the next, then it should have a FALLTHROUGH terminator branch, but all the
+// rest of the fields can be left unpopulated.
+message Branch {
+  enum BranchType {
+    UNKNOWN = 0;
+    DIRECT = 1;
+    CONDITIONAL_DIRECT = 2;
+    INDIRECT = 3;
+    CONDITIONAL_INDIRECT = 4;
+    DIRECT_CALL = 5;
+    INDIRECT_CALL = 6;
+    RETURN = 7;
+    FALLTHROUGH = 8;
+  }
+  BranchType type = 1;
+
+  // Targets of the branch. For calls, this refers to a function ID. For all
+  // other branches, this is a code block ID.
+  repeated int64 targets = 2;
+
+  // Specify at most one of the following:
+  // The probability that this branch will go to targets[i].Must sum to <= 1.
+  repeated float taken_probability = 3;
+  // The exact sequence of branch targets to take.Can be arbitrarily long.  Each
+  // element is an index into targets.
+  repeated int64 target_sequence = 4;
+}
+
+// CFG contains everything needed to generate the benchmark.
+message CFG {
+  repeated Function functions = 1;
+  repeated CodeBlockBody code_block_bodies = 2;
+  int64 entry_point_function = 3;
+  CodeBlock global_vars_decl = 4;
+  CodeBlock global_vars_def = 5;
+}
