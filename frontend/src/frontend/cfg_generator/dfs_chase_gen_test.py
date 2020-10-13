@@ -2,8 +2,8 @@
 # Access to protected class members is common for unit tests.
 # pylint: disable=protected-access
 
-import cfg_pb2
-import dfs_chase_gen
+from frontend.proto import cfg_pb2
+from frontend.cfg_generator import dfs_chase_gen
 import unittest
 
 

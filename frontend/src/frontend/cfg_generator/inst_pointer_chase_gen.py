@@ -6,8 +6,8 @@ function. The function call sequence is designed to look arbitrary. Once this
 callchain completes and unwinds, the function moves on to the next callchain.
 """
 
-import cfg_pb2
-import common
+from frontend.proto import cfg_pb2
+from frontend.cfg_generator import common
 
 MODULE_NAME = 'inst_pointer_chase_gen'
 

@@ -3,9 +3,8 @@
 # pylint: disable=protected-access
 
 import unittest
-
-import cfg_pb2
-import inst_pointer_chase_gen
+from frontend.proto import cfg_pb2
+from frontend.cfg_generator import inst_pointer_chase_gen
 
 
 def _pop_next_function(function_list):

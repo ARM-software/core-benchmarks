@@ -5,8 +5,8 @@ conditional branch that calls one child function. This process repeats until we
 reach the leaf.
 """
 
-import cfg_pb2
-import common
+from frontend.proto import cfg_pb2
+from frontend.cfg_generator import common
 
 MODULE_NAME = 'dfs_chase_gen'
 

@@ -1,7 +1,7 @@
 """Common classes for generating benchmarks."""
 
 import random
-import cfg_pb2
+from frontend.proto import cfg_pb2
 
 
 class IDGenerator(object):
