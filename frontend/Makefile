@@ -22,5 +22,5 @@ test: all
 	done;
 
 clean:
-	-rm $(addprefix $(PROTO_DIR)/, $(PY_PROTOS))
-	-rm $(addprefix $(PROTO_DIR)/, $(PYI_PROTOS))
+	-rm -f $(addprefix $(PROTO_DIR)/, $(PY_PROTOS))
+	-rm -f $(addprefix $(PROTO_DIR)/, $(PYI_PROTOS))

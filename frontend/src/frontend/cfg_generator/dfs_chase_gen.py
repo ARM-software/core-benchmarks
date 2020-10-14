@@ -5,6 +5,7 @@ conditional branch that calls one child function. This process repeats until we
 reach the leaf.
 """
 
+from typing import List, Optional, Dict
 from frontend.proto import cfg_pb2
 from frontend.cfg_generator import common
 
@@ -26,28 +27,28 @@ def register_args(parser):
 class DFSChaseGenerator(common.BaseGenerator):
     """Generates a DFS instruction pointer chase benchmark."""
 
-    def __init__(self, depth, branch_probability):
+    def __init__(self, depth: int, branch_probability: float) -> None:
         super().__init__()
 
-        self._depth = depth
+        self._depth: int = depth
         # Map from function id to its left/right callee.
-        self._function_tree = {}
+        self._function_tree: Dict[int, List[int]] = {}
         # A list of functions that do not call other functions.
-        self._leaf_functions = []
+        self._leaf_functions: List[int] = []
         # ID of the function at the root of the function tree.
-        self._root_func = 0
-        self._callchain_entry_functions = []
-        self._branch_probability = branch_probability
-        self._function_body = self._add_code_block_body(
+        self._root_func: int = 0
+        self._branch_probability: float = branch_probability
+        self._function_body: cfg_pb2.CodeBlockBody = self._add_code_block_body(
             'int x = 1;\n'
             'int y = x*x + 3;\n'
             'int z = y*x + 12345;\n'
             'int w = z*z + x - y;\n')
 
-    def _add_code_block_with_branch(self,
-                                    branch_type,
-                                    target=None,
-                                    probability=None):
+    def _add_code_block_with_branch(
+            self,
+            branch_type: cfg_pb2.Branch.BranchTypeValue,
+            target: Optional[int] = None,
+            probability: Optional[float] = None) -> cfg_pb2.CodeBlock:
         """Add an empty code block with the specified terminator branch."""
         block = self._add_code_block()
         block.terminator_branch.type = branch_type
@@ -57,8 +58,9 @@ class DFSChaseGenerator(common.BaseGenerator):
             block.terminator_branch.taken_probability.append(probability)
         return block
 
-    def _generate_conditional_branch_code_blocks(self, call_targets,
-                                                 probability):
+    def _generate_conditional_branch_code_blocks(
+            self, call_targets: List[int],
+            probability: float) -> List[cfg_pb2.CodeBlock]:
         if len(call_targets) != 2:
             raise ValueError('call_targets must have length 2, got %d' %
                              len(call_targets))
@@ -84,17 +86,17 @@ class DFSChaseGenerator(common.BaseGenerator):
             cond_block, ft_block, ft_block_ret, taken_block, taken_block_ret
         ]
 
-    def _generate_leaf_function_code_blocks(self):
+    def _generate_leaf_function_code_blocks(self) -> cfg_pb2.CodeBlock:
         codeblock = self._add_code_block()
         codeblock.terminator_branch.type = cfg_pb2.Branch.BranchType.RETURN
         return codeblock
 
-    def _generate_function_tree(self):
+    def _generate_function_tree(self) -> None:
         next_id = common.IDGenerator.next()
         self._root_func = next_id
         queue = [next_id]
         for _ in range(0, self._depth - 1):
-            children = []
+            children: List[int] = []
             for func in queue:
                 self._function_tree[func] = [
                     common.IDGenerator.next(),
@@ -105,7 +107,7 @@ class DFSChaseGenerator(common.BaseGenerator):
             # The callees of the second-to-last level in the tree are leaves.
             self._leaf_functions = children
 
-    def _generate_functions(self):
+    def _generate_functions(self) -> None:
         self._add_function_with_id(self._root_func)
         for caller, callees in self._function_tree.items():
             for callee in callees:
@@ -118,7 +120,7 @@ class DFSChaseGenerator(common.BaseGenerator):
             self._functions[leaf].instructions.append(
                 self._generate_leaf_function_code_blocks())
 
-    def generate_cfg(self):
+    def generate_cfg(self) -> cfg_pb2.CFG:
         self._generate_function_tree()
         self._generate_functions()
         return self._generate_cfg(self._functions, self._code_block_bodies,

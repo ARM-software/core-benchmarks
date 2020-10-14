@@ -6,6 +6,7 @@ function. The function call sequence is designed to look arbitrary. Once this
 callchain completes and unwinds, the function moves on to the next callchain.
 """
 
+from typing import List, Optional, Dict
 from frontend.proto import cfg_pb2
 from frontend.cfg_generator import common
 
@@ -32,24 +33,30 @@ NO_CALLEE = -1
 class InstPointerChaseGenerator(common.BaseGenerator):
     """Generates an instruction pointer chase benchmark."""
 
-    def __init__(self, depth, num_callchains, function_selector=None):
+    def __init__(
+            self,
+            depth: int,
+            num_callchains: int,
+            function_selector: Optional[common.FunctionSelector] = None
+    ) -> None:
         super().__init__()
-        self._depth = depth
-        self._num_callchains = num_callchains
-        self._caller2callee = {}
-        self._callchain_entry_functions = []
-        self._entry_function_id = None
+        self._depth: int = depth
+        self._num_callchains: int = num_callchains
+        self._caller2callee: Dict[int, int] = {}
+        self._callchain_entry_functions: List[int] = []
+        self._entry_function_id: int = 0
         if function_selector is None:
-            self._function_selector = common.PopRandomElement
+            self._function_selector: common.FunctionSelector = \
+                common.pop_random_element
         else:
             self._function_selector = function_selector
-        self._function_body = self._add_code_block_body(
+        self._function_body: cfg_pb2.CodeBlockBody = self._add_code_block_body(
             'int x = 1;\n'
             'int y = x*x + 3;\n'
             'int z = y*x + 12345;\n'
             'int w = z*z + x - y;\n')
 
-    def _generate_callchain_mappings(self):
+    def _generate_callchain_mappings(self) -> None:
         num_functions = self._num_callchains * self._depth
         function_list = list(range(0, num_functions))
         for _ in range(0, self._num_callchains):
@@ -67,10 +74,9 @@ class InstPointerChaseGenerator(common.BaseGenerator):
             'There should be exactly one caller2callee mapping for every '
             'function.')
 
-    def _generate_callchain_functions(self):
+    def _generate_callchain_functions(self) -> None:
         # First, generate codeblocks. Each function has two: the main body, with
         # a fallthrough branch, and the call, with a return terminator branch.
-
         for caller, callee in self._caller2callee.items():
             function = self._add_function_with_id(caller)
             main_body = self._add_code_block()
@@ -90,7 +96,7 @@ class InstPointerChaseGenerator(common.BaseGenerator):
                 # create another CodeBlock.
                 function.instructions.append(call_block)
 
-    def _generate_entry_function(self):
+    def _generate_entry_function(self) -> None:
         entry_func = self._add_function_with_id(common.IDGenerator.next())
         for callchain_start in self._callchain_entry_functions:
             # Get the first CodeBlock of the called function.
@@ -105,7 +111,7 @@ class InstPointerChaseGenerator(common.BaseGenerator):
             entry_func.instructions.append(code_block)
         self._entry_function_id = entry_func.id
 
-    def generate_cfg(self):
+    def generate_cfg(self) -> cfg_pb2.CFG:
         self._generate_callchain_mappings()
         self._generate_callchain_functions()
         self._generate_entry_function()

@@ -10,8 +10,8 @@ Example: to generate an instruction pointer chase:
 
 import argparse
 
-import inst_pointer_chase_gen as ichase_gen
-import dfs_chase_gen
+from frontend.cfg_generator import inst_pointer_chase_gen as ichase_gen
+from frontend.cfg_generator import dfs_chase_gen
 
 
 def main():
