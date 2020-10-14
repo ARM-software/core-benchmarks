@@ -1,0 +1,15 @@
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 1
+    code_block_body_id: 1
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+entry_point_function: 2

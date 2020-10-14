@@ -1,0 +1,35 @@
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 1
+    code_block_body_id: 1
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "x = 1;\ny = x*x + 3;\nz = y*x + 12345;\nw = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 2
+  instructions: "void function_19"
+}
+code_block_bodies {
+  id: 3
+  instructions: "extern int x;\nextern int y;\nextern int z;\nextern int w;\n"
+}
+code_block_bodies {
+  id: 4
+  instructions: "int x = 1;\nint y = 0;\nint z = 0;\nint w = 0;\n"
+}
+entry_point_function: 2
+global_vars_decl {
+  id: 3
+  code_block_body_id: 3
+}
+global_vars_def {
+  id: 4
+  code_block_body_id: 4
+}

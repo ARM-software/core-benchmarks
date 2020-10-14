@@ -5,12 +5,13 @@ TEST_DIR = src/frontend/cfg_generator
 VPATH = $(PROTO_DIR)
 PROTOS = cfg.proto
 PY_PROTOS = $(patsubst %.proto, %_pb2.py, $(PROTOS))
+PYI_PROTOS = $(addsuffix i, $(PY_PROTOS))
 
 PY_TESTS = dfs_chase_gen_test.py \
 	   inst_pointer_chase_gen_test.py
 
 %_pb2.py: %.proto
-	protoc --python_out=. $^
+	protoc --python_out=. --mypy_out=. $^
 
 all: $(PY_PROTOS)
 
@@ -22,3 +23,4 @@ test: all
 
 clean:
 	-rm $(addprefix $(PROTO_DIR)/, $(PY_PROTOS))
+	-rm $(addprefix $(PROTO_DIR)/, $(PYI_PROTOS))

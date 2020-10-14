@@ -1,0 +1,42 @@
+# Project generated files #
+cfg_pb2.py*
+
+## Python ###
+venv*/
+.ycm_extra_conf.py
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+# ipython change history
+.ipynb_checkpoints/
+*.egg-info/
+# pytest files
+*,cover
+.coverage
+.pytest_cache/
+# mypy files
+.mypy_cache/
+
+# visual studio
+.vscode
+*.code-workspace
+
+### Vim ###
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+### Emacs ###
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*

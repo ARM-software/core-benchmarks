@@ -1,0 +1,38 @@
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 74
+    code_block_body_id: 1
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 3
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 3
+  signature {
+    code_block_body_id: 3
+  }
+  instructions {
+    id: 71
+    code_block_body_id: 1
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 2
+  instructions: "void function_2"
+}
+code_block_bodies {
+  id: 3
+  instructions: "void function_3"
+}
+entry_point_function: 2

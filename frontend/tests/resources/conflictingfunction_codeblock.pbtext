@@ -1,0 +1,99 @@
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 2
+    code_block_body_id: 1
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 3
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 3
+  signature {
+    code_block_body_id: 3
+  }
+  instructions {
+    id: 71
+    code_block_body_id: 1
+    terminator_branch {
+      type: DIRECT
+      targets: 72
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 4
+  signature {
+    code_block_body_id: 4
+  }
+  instructions {
+    id: 72
+    code_block_body_id: 1
+    terminator_branch {
+      type: INDIRECT_CALL
+      targets: 5
+      taken_probability: 0.4
+      targets: 6
+      taken_probability: 0.6
+    }
+  }
+}
+functions {
+  id: 5
+  signature {
+    code_block_body_id: 5
+  }
+  instructions {
+    id: 73
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 6
+  signature {
+    code_block_body_id: 6
+  }
+  instructions {
+    id: 75
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 2
+  instructions: "void function_2"
+}
+code_block_bodies {
+  id: 3
+  instructions: "void function_3"
+}
+code_block_bodies {
+  id: 4
+  instructions: "void function_4"
+}
+code_block_bodies {
+  id: 5
+  instructions: "void function_5"
+}
+code_block_bodies {
+  id: 6
+  instructions: "void function_6"
+}
+entry_point_function: 2

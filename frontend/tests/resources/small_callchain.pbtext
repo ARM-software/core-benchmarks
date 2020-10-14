@@ -1,0 +1,640 @@
+functions {
+  id: 19
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 3
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 4
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 6
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 15
+  signature {
+    code_block_body_id: 5
+  }
+  instructions {
+    id: 6
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 7
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 9
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 23
+  signature {
+    code_block_body_id: 8
+  }
+  instructions {
+    id: 9
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 10
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 12
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 9
+  signature {
+    code_block_body_id: 11
+  }
+  instructions {
+    id: 12
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 13
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 15
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 7
+  signature {
+    code_block_body_id: 14
+  }
+  instructions {
+    id: 15
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  signature {
+    code_block_body_id: 16
+  }
+  instructions {
+    id: 17
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 18
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 20
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 10
+  signature {
+    code_block_body_id: 19
+  }
+  instructions {
+    id: 20
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 21
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 23
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 12
+  signature {
+    code_block_body_id: 22
+  }
+  instructions {
+    id: 23
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 24
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 26
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 24
+  signature {
+    code_block_body_id: 25
+  }
+  instructions {
+    id: 26
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 27
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 29
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 28
+  }
+  instructions {
+    id: 29
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 5
+  signature {
+    code_block_body_id: 30
+  }
+  instructions {
+    id: 31
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 32
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 34
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 6
+  signature {
+    code_block_body_id: 33
+  }
+  instructions {
+    id: 34
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 35
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 37
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 8
+  signature {
+    code_block_body_id: 36
+  }
+  instructions {
+    id: 37
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 38
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 40
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 14
+  signature {
+    code_block_body_id: 39
+  }
+  instructions {
+    id: 40
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 41
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 43
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 16
+  signature {
+    code_block_body_id: 42
+  }
+  instructions {
+    id: 43
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 11
+  signature {
+    code_block_body_id: 44
+  }
+  instructions {
+    id: 45
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 46
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 48
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 22
+  signature {
+    code_block_body_id: 47
+  }
+  instructions {
+    id: 48
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 49
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 51
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 21
+  signature {
+    code_block_body_id: 50
+  }
+  instructions {
+    id: 51
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 52
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 54
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 20
+  signature {
+    code_block_body_id: 53
+  }
+  instructions {
+    id: 54
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 55
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 57
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 1
+  signature {
+    code_block_body_id: 56
+  }
+  instructions {
+    id: 57
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 13
+  signature {
+    code_block_body_id: 58
+  }
+  instructions {
+    id: 59
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 60
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 62
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 4
+  signature {
+    code_block_body_id: 61
+  }
+  instructions {
+    id: 62
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 63
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 65
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 18
+  signature {
+    code_block_body_id: 64
+  }
+  instructions {
+    id: 65
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 66
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 68
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 17
+  signature {
+    code_block_body_id: 67
+  }
+  instructions {
+    id: 68
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+  instructions {
+    id: 69
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 71
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 3
+  signature {
+    code_block_body_id: 70
+  }
+  instructions {
+    id: 71
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 72
+  signature {
+    code_block_body_id: 73
+  }
+  instructions {
+    id: 74
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 3
+      taken_probability: 1.0
+    }
+  }
+  instructions {
+    id: 75
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 17
+      taken_probability: 1.0
+    }
+  }
+  instructions {
+    id: 76
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 31
+      taken_probability: 1.0
+    }
+  }
+  instructions {
+    id: 77
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 45
+      taken_probability: 1.0
+    }
+  }
+  instructions {
+    id: 78
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 59
+      taken_probability: 1.0
+    }
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 2
+  instructions: "void function_19"
+}
+code_block_bodies {
+  id: 5
+  instructions: "void function_15"
+}
+code_block_bodies {
+  id: 8
+  instructions: "void function_23"
+}
+code_block_bodies {
+  id: 11
+  instructions: "void function_9"
+}
+code_block_bodies {
+  id: 14
+  instructions: "void function_7"
+}
+code_block_bodies {
+  id: 16
+  instructions: "void function_0"
+}
+code_block_bodies {
+  id: 19
+  instructions: "void function_10"
+}
+code_block_bodies {
+  id: 22
+  instructions: "void function_12"
+}
+code_block_bodies {
+  id: 25
+  instructions: "void function_24"
+}
+code_block_bodies {
+  id: 28
+  instructions: "void function_2"
+}
+code_block_bodies {
+  id: 30
+  instructions: "void function_5"
+}
+code_block_bodies {
+  id: 33
+  instructions: "void function_6"
+}
+code_block_bodies {
+  id: 36
+  instructions: "void function_8"
+}
+code_block_bodies {
+  id: 39
+  instructions: "void function_14"
+}
+code_block_bodies {
+  id: 42
+  instructions: "void function_16"
+}
+code_block_bodies {
+  id: 44
+  instructions: "void function_11"
+}
+code_block_bodies {
+  id: 47
+  instructions: "void function_22"
+}
+code_block_bodies {
+  id: 50
+  instructions: "void function_21"
+}
+code_block_bodies {
+  id: 53
+  instructions: "void function_20"
+}
+code_block_bodies {
+  id: 56
+  instructions: "void function_1"
+}
+code_block_bodies {
+  id: 58
+  instructions: "void function_13"
+}
+code_block_bodies {
+  id: 61
+  instructions: "void function_4"
+}
+code_block_bodies {
+  id: 64
+  instructions: "void function_18"
+}
+code_block_bodies {
+  id: 67
+  instructions: "void function_17"
+}
+code_block_bodies {
+  id: 70
+  instructions: "void function_3"
+}
+code_block_bodies {
+  id: 73
+  instructions: "void function_72"
+}
+entry_point_function: 72
+
