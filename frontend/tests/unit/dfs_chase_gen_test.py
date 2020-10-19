@@ -7,12 +7,12 @@ from frontend.cfg_generator import dfs_chase_gen
 import unittest
 
 
-class DFSChaseGenTest(unittest.TestCase):
+class DirectCallDFSChaseGenTest(unittest.TestCase):
 
     def setUp(self):
         self.depth = 3
         self.branch_probability = 0.5
-        self.gen = dfs_chase_gen.DFSChaseGenerator(self.depth,
+        self.gen = dfs_chase_gen.DFSChaseGenerator(self.depth, False,
                                                    self.branch_probability)
 
     def test_generate_function_tree(self):
@@ -72,6 +72,28 @@ class DFSChaseGenTest(unittest.TestCase):
         # body for all functions.
         expected_codeblock_bodies = len(self.gen._functions) + 1
         self.assertEqual(len(cfg.code_block_bodies), expected_codeblock_bodies)
+
+
+class IndirectCallDFSChaseGenTest(unittest.TestCase):
+
+    def setUp(self):
+        self.depth = 3
+        self.branch_probability = 0.5
+        self.gen = dfs_chase_gen.DFSChaseGenerator(self.depth, True,
+                                                   self.branch_probability)
+
+    def test_generate_indirect_call_code_block(self):
+        callee_funcs = [2, 3]
+        callee_probability = 0.6
+        block = self.gen._generate_indirect_call_code_block(
+            callee_funcs, callee_probability)
+        self.assertEqual(block.terminator_branch.type,
+                         cfg_pb2.Branch.BranchType.INDIRECT_CALL)
+        self.assertEqual(block.terminator_branch.targets, callee_funcs)
+        self.assertAlmostEqual(block.terminator_branch.taken_probability[0],
+                               0.6)
+        self.assertAlmostEqual(block.terminator_branch.taken_probability[1],
+                               0.4)
 
 
 if __name__ == '__main__':

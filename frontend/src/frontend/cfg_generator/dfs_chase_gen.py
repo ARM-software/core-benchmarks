@@ -5,6 +5,7 @@ conditional branch that calls one child function. This process repeats until we
 reach the leaf.
 """
 
+from __future__ import annotations
 from typing import List, Optional, Dict
 from frontend.proto import cfg_pb2
 from frontend.cfg_generator import common
@@ -18,6 +19,11 @@ def register_args(parser):
                            default=20,
                            type=int,
                            help='Depth of the function call tree.')
+    subparser.add_argument(
+        '--use_indirect_calls',
+        default=False,
+        action='store_true',
+        help='If true, uses indirect calls to call functions')
     subparser.add_argument('--branch_probability',
                            default=0.5,
                            type=float,
@@ -27,7 +33,16 @@ def register_args(parser):
 class DFSChaseGenerator(common.BaseGenerator):
     """Generates a DFS instruction pointer chase benchmark."""
 
-    def __init__(self, depth: int, branch_probability: float) -> None:
+    def __init__(self, depth: int, use_indirect_calls: bool,
+                 left_path_probability: float) -> None:
+        """Constructs a DFS pointer chase generator.
+
+        Args:
+            depth: The depth of the binary tree.
+            use_indirect_calls: Use indirect calls to traverse the tree. If
+                false, the CFG will create conditional branches + direct calls.
+            left_path_probability: The probability of taking the left path.
+        """
         super().__init__()
 
         self._depth: int = depth
@@ -37,7 +52,8 @@ class DFSChaseGenerator(common.BaseGenerator):
         self._leaf_functions: List[int] = []
         # ID of the function at the root of the function tree.
         self._root_func: int = 0
-        self._branch_probability: float = branch_probability
+        self._left_path_probability: float = left_path_probability
+        self._use_indirect_calls: bool = use_indirect_calls
         self._function_body: cfg_pb2.CodeBlockBody = self._add_code_block_body(
             'int x = 1;\n'
             'int y = x*x + 3;\n'
@@ -58,9 +74,43 @@ class DFSChaseGenerator(common.BaseGenerator):
             block.terminator_branch.taken_probability.append(probability)
         return block
 
+    def _generate_indirect_call_code_block(
+            self, call_targets: List[int],
+            callee_probability: float) -> cfg_pb2.CodeBlock:
+        """Generates a single CodeBlock that indirectly calls 2 targets.
+
+        Since we're using indirect calls here, we don't need to encode
+        conditional branching into the CFG. We allow the backend to
+        automatically determine which of the call targets are called.
+
+        Args:
+            call_targets: List of Function IDs. Should be of length 2.
+            callee_probability: Probability that we call the first callee in
+               call_targets.
+        Returns:
+            One CodeBlock.
+        """
+        if len(call_targets) != 2:
+            raise ValueError('call_targets must have length 2, got %d' %
+                             len(call_targets))
+
+        block = self._add_code_block()
+        block.terminator_branch.type = cfg_pb2.Branch.BranchType.INDIRECT_CALL
+        for target in call_targets:
+            block.terminator_branch.targets.append(target)
+        block.terminator_branch.taken_probability.append(callee_probability)
+        block.terminator_branch.taken_probability.append(1.0 -
+                                                         callee_probability)
+        return block
+
     def _generate_conditional_branch_code_blocks(
             self, call_targets: List[int],
             probability: float) -> List[cfg_pb2.CodeBlock]:
+        """Generates CodeBlocks to conditionally directly call two callees.
+
+        The CFG directly encodes conditional branches with the given branch
+        probabilities which lead to direct calls to the callees.
+        """
         if len(call_targets) != 2:
             raise ValueError('call_targets must have length 2, got %d' %
                              len(call_targets))
@@ -112,9 +162,14 @@ class DFSChaseGenerator(common.BaseGenerator):
         for caller, callees in self._function_tree.items():
             for callee in callees:
                 self._add_function_with_id(callee)
-            self._functions[caller].instructions.extend(
-                self._generate_conditional_branch_code_blocks(
-                    callees, self._branch_probability))
+            if self._use_indirect_calls:
+                self._functions[caller].instructions.append(
+                    self._generate_indirect_call_code_block(
+                        callees, self._left_path_probability))
+            else:
+                self._functions[caller].instructions.extend(
+                    self._generate_conditional_branch_code_blocks(
+                        callees, self._left_path_probability))
 
         for leaf in self._leaf_functions:
             self._functions[leaf].instructions.append(
@@ -130,5 +185,6 @@ class DFSChaseGenerator(common.BaseGenerator):
 def generate_cfg(args):
     """Generate a CFG of arbitrary callchains."""
     print('Generating DFS instruction pointer chase benchmark...')
-    generator = DFSChaseGenerator(args.depth, args.branch_probability)
+    generator = DFSChaseGenerator(args.depth, args.use_indirect_calls,
+                                  args.branch_probability)
     return generator.generate_cfg()
