@@ -95,6 +95,9 @@ def test_branch_implicit_fallthrough(resources, tmpdir):
 
 def switch_processor(value1, value2):
     processor = platform.processor()
+    if not processor:
+      # platform.processor() is not always populated.
+      processor = platform.machine()
     if processor == 'x86_64':
         return value1
     elif processor == 'aarch64':
