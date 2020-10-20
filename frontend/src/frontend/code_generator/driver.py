@@ -1,5 +1,5 @@
-"""Generate source files from provided callgraph."""
 #!/usr/bin/python3
+"""Generate source files from provided callgraph."""
 
 import argparse
 from frontend.code_generator import source_generator

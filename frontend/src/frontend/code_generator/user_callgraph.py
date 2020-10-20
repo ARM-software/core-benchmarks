@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Dict, Optional, Collection
 from frontend.code_generator import blocks
 from frontend.proto import cfg_pb2
-from google.protobuf import text_format
+from google.protobuf import text_format  # type: ignore[attr-defined]
 
 
 class Callgraph:

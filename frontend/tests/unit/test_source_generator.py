@@ -6,7 +6,7 @@ import platform
 import glob
 import re
 from filecmp import dircmp
-import sh
+import sh  # type: ignore[import]
 from frontend.code_generator import user_callgraph
 from frontend.code_generator import source_generator
 
@@ -31,7 +31,7 @@ def test_branch_indirect_call(resources, tmpdir):
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
-    output = compile_and_return_output(
+    output = compile_and_check_function_for_asm(
         tmpdir, 'function_2',
         switch_processor(X86_INDIRECT_CALL, ARM_INDIRECT_CALL))
     assert output, 'Missing indirect function call'
@@ -46,7 +46,7 @@ def test_branch_direct_call(resources, tmpdir):
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
-    output = compile_and_return_output(
+    output = compile_and_check_function_for_asm(
         tmpdir, 'function_2', switch_processor(X86_DIRECT_CALL,
                                                ARM_DIRECT_CALL))
     assert output, 'Missing direct function call'
@@ -61,7 +61,7 @@ def test_branch_indirect(resources, tmpdir):
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
-    output = compile_and_return_output(
+    output = compile_and_check_function_for_asm(
         tmpdir, 'function_2',
         switch_processor(X86_INDIRECT_BRANCH, ARM_INDIRECT_BRANCH))
     assert output, 'Missing indirect branch'
@@ -76,7 +76,7 @@ def test_branch_conditional_direct(resources, tmpdir):
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
-    output = compile_and_return_output(
+    output = compile_and_check_function_for_asm(
         tmpdir, 'function_2',
         switch_processor(X86_CONDITIONAL_DIRECT, ARM_CONDITIONAL_DIRECT))
     assert output, 'Missing indirect branch'
@@ -87,7 +87,7 @@ def test_branch_implicit_fallthrough(resources, tmpdir):
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
-    output = compile_and_return_output(
+    output = compile_and_check_function_for_asm(
         tmpdir, 'function_2',
         switch_processor(X86_CONDITIONAL_DIRECT, ARM_CONDITIONAL_DIRECT))
     assert output, 'Implicit fallthrough branch error'
@@ -96,8 +96,8 @@ def test_branch_implicit_fallthrough(resources, tmpdir):
 def switch_processor(value1, value2):
     processor = platform.processor()
     if not processor:
-      # platform.processor() is not always populated.
-      processor = platform.machine()
+        # platform.processor() is not always populated.
+        processor = platform.machine()
     if processor == 'x86_64':
         return value1
     elif processor == 'aarch64':
@@ -105,13 +105,26 @@ def switch_processor(value1, value2):
     raise RuntimeError(f'Unrecognized processor: {processor}')
 
 
-def compile_and_return_output(directory, symbol, asm):
+def compile_and_check_function_for_asm(directory: str, function: str, asm: str):
+    output_file = compile_c_files(directory)
+    return check_for_asm(output_file, function, asm)
+
+
+def compile_c_files(directory: str) -> str:
     gcc = sh.Command('gcc')
-    objdump = sh.Command('objdump')
     output_file = f'{directory}/bin_output'
     gcc('-o', output_file, '-O0', glob.glob(f'{directory}/*.c'))
-    out = objdump(f'--disassemble={symbol}', output_file)
-    return bool(re.search(asm, str(out)))
+    return output_file
+
+
+def check_for_asm(binary: str, symbol: str, asm: str) -> bool:
+    objdump = sh.Command('objdump')
+    out = objdump('-d', binary)
+    match = re.search(r'<{}>:.*?^$'.format(symbol), str(out),
+                      re.DOTALL | re.MULTILINE)
+    if not match:
+        raise RuntimeError(f'No matching symbol {symbol} in file {binary}')
+    return bool(re.search(asm, match.group(0)))
 
 
 def test_get_formatted_headers_onefunction(resources):
