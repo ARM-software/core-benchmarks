@@ -12,12 +12,32 @@ message CodeBlock {
   int64 unroll_factor = 4;
 }
 
-// The body of a CodeBlock. The "instructions" field is expected to be valid C
-// or assembly. Note: you can use inline assembly syntax to write assembly as C
-// for easier integration with other code.
+message CodePrefetchInst {
+  enum TargetType {
+    UNKNOWN = 0;
+    FUNCTION = 1;
+    CODE_BLOCK = 2;
+  }
+  // The type of the target address. Required because functions and code blocks
+  // use separate ID spaces.
+  TargetType type = 1;
+  // The target CodeBlock or Function. The prefetch will bring in the cacheline
+  // on which this code resides.
+  int64 target_id = 2;
+  // The number of cache lines to prefetch. If > 1, additional cache lines after
+  // the target will be prefetched as well. Must be > 0.
+  int32 degree = 3;
+}
+
+// The body of a CodeBlock. It either contains a body of C or assembly in the
+// "instructions" field or a CodePrefetchInst targeting some other
+// CodeBlock/Function in this program.
 message CodeBlockBody {
   int64 id = 1;
-  string instructions = 2;
+  oneof body {
+    string instructions = 2;
+    CodePrefetchInst code_prefetch = 3;
+  }
 }
 
 // A function consists of an ordered list of CodeBlocks.

@@ -22,6 +22,7 @@ class InstPointerChaseGeneratorTest(unittest.TestCase):
         self.gen = inst_pointer_chase_gen.InstPointerChaseGenerator(
             self.depth,
             self.num_callchains,
+            False,  # insert_code_prefetches
             function_selector=_pop_next_function)
 
     def _target_branch_for(self, func):
@@ -118,6 +119,57 @@ class InstPointerChaseGeneratorTest(unittest.TestCase):
         # Each function adds a code block body to store its signature, and all
         # functions share the same main code block body.
         self.assertEqual(len(cfg.code_block_bodies), num_total_functions + 1)
+
+
+class CodePrefetchInstPointerChaseGeneratorTest(unittest.TestCase):
+
+    def setUp(self):
+        self.depth = 3
+        self.num_callchains = 2
+        self.gen = inst_pointer_chase_gen.InstPointerChaseGenerator(
+            self.depth,
+            self.num_callchains,
+            True,  # insert_code_prefetches
+            function_selector=_pop_next_function)
+
+    def test_add_code_prefetch_code_block(self):
+        block = self.gen._add_code_prefetch_code_block(function_id=1, degree=2)
+        body = self.gen._code_block_bodies[block.code_block_body_id]
+        self.assertEqual(body.code_prefetch.type,
+                         cfg_pb2.CodePrefetchInst.TargetType.FUNCTION)
+        self.assertEqual(body.code_prefetch.target_id, 1)
+        self.assertEqual(body.code_prefetch.degree, 2)
+
+        block = self.gen._add_code_prefetch_code_block(code_block_id=1,
+                                                       degree=2)
+        body = self.gen._code_block_bodies[block.code_block_body_id]
+        self.assertEqual(body.code_prefetch.type,
+                         cfg_pb2.CodePrefetchInst.TargetType.CODE_BLOCK)
+        self.assertEqual(body.code_prefetch.target_id, 1)
+        self.assertEqual(body.code_prefetch.degree, 2)
+
+        with self.assertRaises(ValueError) as context:
+            block = self.gen._add_code_prefetch_code_block(code_block_id=1,
+                                                           function_id=1)
+
+    def test_generate_callchain_functions_with_code_prefetch(self):
+        self.gen._generate_callchain_mappings()
+        self.gen._generate_callchain_functions()
+        # Map from a caller function to its callee in the chain.
+        expected_caller2callee = {0: 1, 1: 2, 3: 4, 4: 5}
+
+        for func_id, func in self.gen._functions.items():
+            if func_id in expected_caller2callee:
+                # Three code block bodies: prefetch, main body, call.
+                self.assertEqual(len(func.instructions), 3)
+                prefetch_block = func.instructions[0]
+                prefetch_body = self.gen._code_block_bodies[
+                    prefetch_block.code_block_body_id]
+                self.assertEqual(prefetch_body.code_prefetch.type,
+                                 cfg_pb2.CodePrefetchInst.FUNCTION)
+                callee = expected_caller2callee[func_id]
+                self.assertEqual(prefetch_body.code_prefetch.target_id, callee)
+                self.assertEqual(prefetch_body.code_prefetch.degree, 1)
 
 
 if __name__ == '__main__':

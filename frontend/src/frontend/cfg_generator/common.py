@@ -42,7 +42,7 @@ class BaseGenerator(object):
     def function_name(self, function_id: int) -> str:
         return 'function_%d' % function_id
 
-    def _add_code_block_body(self, code: str) -> cfg_pb2.CodeBlockBody:
+    def _add_code_block_body(self, code: str = '') -> cfg_pb2.CodeBlockBody:
         next_id = IDGenerator.next()
         self._code_block_bodies[next_id] = cfg_pb2.CodeBlockBody(
             id=next_id, instructions=code)
