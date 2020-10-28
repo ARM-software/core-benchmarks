@@ -1,7 +1,7 @@
 """In-memory representation of a callgraph.
 """
 from __future__ import annotations
-from typing import Dict, Optional, Collection
+from typing import Dict, Optional, Collection, Callable, List
 from frontend.code_generator import blocks
 from frontend.proto import cfg_pb2
 from google.protobuf import text_format  # type: ignore[attr-defined]
@@ -119,7 +119,7 @@ class Callgraph:
         return f'{cbb_text}{branch_text}'
 
     def format_branch(self, branch: blocks.Branch) -> str:
-        branch_formatters = {
+        branch_formatters: Dict[blocks.BranchType, Callable] = {
             blocks.BranchType.INDIRECT_CALL:
                 self._format_branch_indirect_call,
             blocks.BranchType.DIRECT_CALL:
@@ -143,10 +143,75 @@ class Callgraph:
             return branch_formatters[branch.branch_type](branch)
         raise ValueError(f'Unknown branch type: {branch.branch_type}')
 
-    def _format_branch_indirect_call(self, branch: blocks.Branch) -> str:
+    def _format_branch_indirect_call(self,
+                                     branch: blocks.Branch,
+                                     uuid: int = None) -> str:
+        """Format an indirect call.
+
+        Args:
+            branch: blocks.Branch instance. Must have branch_type of
+              INDIRECT_CALL.
+            uuid: Unique suffix to use for local variables. Used to
+              differentiate multiple branches in a single function and to avoid
+              any overlapping variables provided in user defined instructions.
+              Leaving unspecified will let the program decide a unique suffix.
+
+        Returns:
+            A str representing an indirect call in C.
+        """
+        if uuid is None:
+            uuid = id(branch)
+        if len(branch.get_targets()) == 1:
+            return self._format_indirect_call_singletarget(branch, uuid)
+        return self._format_indirect_call_multitarget(branch, uuid)
+
+    def _format_indirect_call_singletarget(self, branch: blocks.Branch,
+                                           uuid: int) -> str:
         target = branch.next_valid_target()
         sig = self.function_call_signature_for(target)
-        return f'void (*frontend_f)(void) = {sig};\nfrontend_f();\n'
+        return (f'void (*frontend_{uuid})(void) = {sig};\n'
+                f'frontend_{uuid}();\n')
+
+    def _format_indirect_call_multitarget(self, branch: blocks.Branch,
+                                          uuid: int) -> str:
+        paths = branch.next_target_sequence()
+        max_index = len(paths)
+        paths_array_name = f'paths_{uuid}'
+        paths_array = self._create_target_sequence_array(
+            paths, paths_array_name)
+        func_array = self._create_call_target_array(branch.get_targets(),
+                                                    f'array_{uuid}')
+        result = (
+            f'static int index_{uuid} = 0;\n'
+            f'{paths_array}'
+            f'{func_array}'
+            f'void (*f_{uuid})(void) = '
+            f'array_{uuid}[{paths_array_name}[index_{uuid}++ % {max_index}]];\n'
+            f'f_{uuid}();\n')
+        return result
+
+    def _create_target_sequence_array(self, target_sequence: List[int],
+                                      array_name: str) -> str:
+        max_index = len(target_sequence)
+        target_sequence_formatted = ','.join(
+            [str(target) for target in target_sequence])
+        result = (f'static int {array_name}[{max_index}] = '
+                  '{'
+                  f'{target_sequence_formatted}'
+                  '};\n')
+        return result
+
+    def _create_call_target_array(self, targets: List[Optional[int]],
+                                  array_name: str) -> str:
+        result = f'static void* {array_name}[] = ' + '{'
+        func_targets = []
+        for target in targets:
+            if target is None:
+                raise ValueError('Call to None target found')
+            func_targets.append('&' + self.function_call_signature_for(target))
+        result += ', '.join(func_targets)
+        result += '};\n'
+        return result
 
     def _format_branch_direct_call(self, branch: blocks.Branch) -> str:
         target = branch.next_valid_target()
@@ -161,15 +226,14 @@ class Callgraph:
         paths = branch.next_target_sequence()
         max_index = len(paths)
         branch_id = id(branch)
-        paths_formatted = ','.join([str(path) for path in paths])
+        paths_array_name = f'paths_{branch_id}'
+        paths_array = self._create_target_sequence_array(
+            paths, paths_array_name)
         switch_cases = self._build_switch_cases(branch)
         result = (
             f'static int index_{branch_id} = 0;\n'
-            f'static int paths_{branch_id}[{max_index}] = '
-            '{'
-            f'{paths_formatted}'
-            '};\n'
-            f'switch (paths_{branch_id}[index_{branch_id}++ % {max_index}]) '
+            f'{paths_array}'
+            f'switch ({paths_array_name}[index_{branch_id}++ % {max_index}]) '
             '{\n'
             f'{switch_cases}'
             '}\n')

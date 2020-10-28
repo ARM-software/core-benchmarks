@@ -1,0 +1,58 @@
+functions {
+  id: 2
+  signature {
+    code_block_body_id: 5
+  }
+  instructions {
+    id: 8
+    terminator_branch {
+      type: INDIRECT_CALL
+      targets: 3
+      targets: 4
+      taken_probability: 0.5
+      taken_probability: 0.5
+    }
+  }
+}
+functions {
+  id: 3
+  signature {
+    code_block_body_id: 6
+  }
+  instructions {
+    id: 9
+    terminator_branch {
+      type: RETURN
+    }
+  }
+}
+functions {
+  id: 4
+  signature {
+    code_block_body_id: 7
+  }
+  instructions {
+    id: 10
+    terminator_branch {
+      type: RETURN
+    }
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 5
+  instructions: "void function_2"
+}
+code_block_bodies {
+  id: 6
+  instructions: "void function_3"
+}
+code_block_bodies {
+  id: 7
+  instructions: "void function_4"
+}
+entry_point_function: 2
+

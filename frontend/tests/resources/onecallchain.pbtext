@@ -37,11 +37,18 @@ functions {
     id: 72
     code_block_body_id: 1
     terminator_branch {
-      type: INDIRECT_CALL
+      type: DIRECT_CALL
       targets: 5
-      taken_probability: 0.4
+      taken_probability: 1.0
+    }
+  }
+  instructions {
+    id: 76
+    code_block_body_id: 1
+    terminator_branch {
+      type: DIRECT_CALL
       targets: 6
-      taken_probability: 0.6
+      taken_probability: 1.0
     }
   }
 }

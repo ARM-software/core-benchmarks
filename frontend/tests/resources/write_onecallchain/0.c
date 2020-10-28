@@ -24,8 +24,13 @@ int x = 1;
 int y = x*x + 3;
 int z = y*x + 12345;
 int w = z*z + x - y;
-void (*frontend_f)(void) = function_6;
-frontend_f();
+function_5();
+label76:;
+int x = 1;
+int y = x*x + 3;
+int z = y*x + 12345;
+int w = z*z + x - y;
+function_6();
 }
 
 void function_5() {

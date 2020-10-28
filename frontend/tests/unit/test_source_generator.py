@@ -26,8 +26,11 @@ X86_INDIRECT_CALL = r'callq\s+\*'
 ARM_INDIRECT_CALL = r'\s+blr\s+x\d+'
 
 
-def test_branch_indirect_call(resources, tmpdir):
-    test_file = os.path.join(resources, 'branch_indirect_call.pbtext')
+@pytest.mark.parametrize(
+    'pbfile',
+    ['branch_indirect_call.pbtext', 'branch_indirect_call_multitarget.pbtext'])
+def test_branch_indirect_call(resources, tmpdir, pbfile):
+    test_file = os.path.join(resources, pbfile)
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
@@ -125,14 +128,6 @@ def check_for_asm(binary: str, symbol: str, asm: str) -> bool:
     if not match:
         raise RuntimeError(f'No matching symbol {symbol} in file {binary}')
     return bool(re.search(asm, match.group(0)))
-
-
-def test_get_formatted_headers_onefunction(resources):
-    test_file = os.path.join(resources, 'onefunction.pbtext')
-    expected = 'void function_19();\n'
-    cfg = user_callgraph.Callgraph.from_proto(test_file)
-    output = cfg.format_headers()
-    assert output == expected
 
 
 def test_write_onefunction(resources, tmpdir):
