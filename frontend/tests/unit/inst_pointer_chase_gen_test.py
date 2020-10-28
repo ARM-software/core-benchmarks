@@ -148,7 +148,7 @@ class CodePrefetchInstPointerChaseGeneratorTest(unittest.TestCase):
         self.assertEqual(body.code_prefetch.target_id, 1)
         self.assertEqual(body.code_prefetch.degree, 2)
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             block = self.gen._add_code_prefetch_code_block(code_block_id=1,
                                                            function_id=1)
 
