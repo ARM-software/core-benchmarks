@@ -130,6 +130,7 @@ class DFSChaseGenerator(common.BaseGenerator):
         cond_block = self._add_code_block_with_branch(
             cfg_pb2.Branch.BranchType.CONDITIONAL_DIRECT, taken_block.id,
             probability)
+        cond_block.code_block_body_id = self._function_body.id
 
         # Fallthrough must come right after the conditional branch.
         return [
@@ -138,6 +139,7 @@ class DFSChaseGenerator(common.BaseGenerator):
 
     def _generate_leaf_function_code_blocks(self) -> cfg_pb2.CodeBlock:
         codeblock = self._add_code_block()
+        codeblock.code_block_body_id = self._function_body.id
         codeblock.terminator_branch.type = cfg_pb2.Branch.BranchType.RETURN
         return codeblock
 

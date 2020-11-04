@@ -28,13 +28,15 @@ class DirectCallDFSChaseGenTest(unittest.TestCase):
 
     def test_generate_conditional_branch_code_blocks(self):
         callees = [2, 3]  # Function IDs.
-        codeblock, ft_block, ft_block_ret, taken_block, taken_block_ret = \
+        cond_block, ft_block, ft_block_ret, taken_block, taken_block_ret = \
             self.gen._generate_conditional_branch_code_blocks(
                 callees, self.branch_probability)
-        self.assertEqual(codeblock.terminator_branch.type,
+        self.assertEqual(cond_block.terminator_branch.type,
                          cfg_pb2.Branch.BranchType.CONDITIONAL_DIRECT)
-        self.assertEqual(codeblock.terminator_branch.targets, [taken_block.id])
-        self.assertEqual(codeblock.terminator_branch.taken_probability,
+        self.assertEqual(cond_block.code_block_body_id,
+                         self.gen._function_body.id)
+        self.assertEqual(cond_block.terminator_branch.targets, [taken_block.id])
+        self.assertEqual(cond_block.terminator_branch.taken_probability,
                          [self.branch_probability])
 
         self.assertEqual(taken_block.terminator_branch.type,
@@ -61,6 +63,8 @@ class DirectCallDFSChaseGenTest(unittest.TestCase):
             else:
                 # Leaf functions have just one.
                 self.assertEqual(len(func.instructions), 1)
+                self.assertEqual(func.instructions[0].code_block_body_id,
+                                 self.gen._function_body.id)
 
     def test_generate_cfg(self):
         cfg = self.gen.generate_cfg()
