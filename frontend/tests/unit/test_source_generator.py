@@ -28,7 +28,7 @@ ARM_INDIRECT_CALL = r'\s+blr\s+x\d+'
 
 @pytest.mark.parametrize(
     'pbfile',
-    ['branch_indirect_call.pbtext', 'branch_indirect_call_multitarget.pbtext'])
+    ['branch_indirect_call.pbtxt', 'branch_indirect_call_multitarget.pbtxt'])
 def test_branch_indirect_call(resources, tmpdir, pbfile):
     test_file = os.path.join(resources, pbfile)
     cfg = user_callgraph.Callgraph.from_proto(test_file)
@@ -45,7 +45,7 @@ ARM_DIRECT_CALL = r'\s+bl\s+\d*'
 
 
 def test_branch_direct_call(resources, tmpdir):
-    test_file = os.path.join(resources, 'branch_direct_call.pbtext')
+    test_file = os.path.join(resources, 'branch_direct_call.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
@@ -60,7 +60,7 @@ ARM_INDIRECT_BRANCH = r'\s+br\s+x\d+'
 
 
 def test_branch_indirect(resources, tmpdir):
-    test_file = os.path.join(resources, 'branch_indirect.pbtext')
+    test_file = os.path.join(resources, 'branch_indirect.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
@@ -75,7 +75,7 @@ ARM_CONDITIONAL_DIRECT = r'\s+b\.\w+\s+\d+'
 
 
 def test_branch_conditional_direct(resources, tmpdir):
-    test_file = os.path.join(resources, 'branch_conditional_direct.pbtext')
+    test_file = os.path.join(resources, 'branch_conditional_direct.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
@@ -86,7 +86,7 @@ def test_branch_conditional_direct(resources, tmpdir):
 
 
 def test_branch_implicit_fallthrough(resources, tmpdir):
-    test_file = os.path.join(resources, 'branch_implicit_fallthrough.pbtext')
+    test_file = os.path.join(resources, 'branch_implicit_fallthrough.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
     source_gen.write_files()
@@ -131,7 +131,7 @@ def check_for_asm(binary: str, symbol: str, asm: str) -> bool:
 
 
 def test_write_onefunction(resources, tmpdir):
-    test_file = os.path.join(resources, 'onefunction.pbtext')
+    test_file = os.path.join(resources, 'onefunction.pbtxt')
     expected_dir = os.path.join(resources, 'write_onefunction')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
@@ -142,7 +142,7 @@ def test_write_onefunction(resources, tmpdir):
 
 
 def test_write_onefunction_globalvars(resources, tmpdir):
-    test_file = os.path.join(resources, 'onefunction_globalvars.pbtext')
+    test_file = os.path.join(resources, 'onefunction_globalvars.pbtxt')
     expected_dir = os.path.join(resources, 'write_onefunction_globalvars')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)
@@ -153,7 +153,7 @@ def test_write_onefunction_globalvars(resources, tmpdir):
 
 
 def test_write_onecallchain(resources, tmpdir):
-    test_file = os.path.join(resources, 'onecallchain.pbtext')
+    test_file = os.path.join(resources, 'onecallchain.pbtxt')
     expected_dir = os.path.join(resources, 'write_onecallchain')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     source_gen = source_generator.SourceGenerator(tmpdir, cfg)

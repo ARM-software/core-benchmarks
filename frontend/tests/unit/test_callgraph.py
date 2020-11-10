@@ -27,7 +27,7 @@ def test_callgraph_from_proto_file(resources):
 
 
 def test_get_formatted_headers_onecallchain(resources):
-    test_file = os.path.join(resources, 'onecallchain.pbtext')
+    test_file = os.path.join(resources, 'onecallchain.pbtxt')
     expected = ('void function_2();\n'
                 'void function_3();\n'
                 'void function_4();\n'
@@ -39,7 +39,7 @@ def test_get_formatted_headers_onecallchain(resources):
 
 
 def test_load_onecallchain(resources):
-    test_file = os.path.join(resources, 'onecallchain.pbtext')
+    test_file = os.path.join(resources, 'onecallchain.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     assert isinstance(cfg, user_callgraph.Callgraph)
     assert len(cfg.functions) == 5
@@ -55,7 +55,7 @@ def test_load_binary_proto(resources):
 
 
 def test_load_onefunction(resources):
-    test_file = os.path.join(resources, 'onefunction.pbtext')
+    test_file = os.path.join(resources, 'onefunction.pbtxt')
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     assert isinstance(cfg, user_callgraph.Callgraph)
     assert len(cfg.functions) == 1
@@ -63,7 +63,7 @@ def test_load_onefunction(resources):
 
 
 def test_print_function_onefunction(resources):
-    test_file = os.path.join(resources, 'onefunction.pbtext')
+    test_file = os.path.join(resources, 'onefunction.pbtxt')
     expected = ('void function_19() {\n'
                 'label1:;\n'
                 'int x = 1;\n'
@@ -77,7 +77,7 @@ def test_print_function_onefunction(resources):
 
 
 def test_print_function_onecallchain(resources):
-    test_file = os.path.join(resources, 'onecallchain.pbtext')
+    test_file = os.path.join(resources, 'onecallchain.pbtxt')
     expected_2 = ('void function_2() {\n'
                   'label74:;\n'
                   'int x = 1;\n'
@@ -100,7 +100,7 @@ def test_print_function_onecallchain(resources):
 
 
 def test_get_formatted_headers_onefunction(resources):
-    test_file = os.path.join(resources, 'onefunction.pbtext')
+    test_file = os.path.join(resources, 'onefunction.pbtxt')
     expected = 'void function_19();\n'
     cfg = user_callgraph.Callgraph.from_proto(test_file)
     output = cfg.format_headers()
@@ -109,7 +109,7 @@ def test_get_formatted_headers_onefunction(resources):
 
 def test_indirect_branch_multitarget(resources):
     test_file = os.path.join(resources,
-                             'branch_indirect_call_multitarget.pbtext')
+                             'branch_indirect_call_multitarget.pbtxt')
     blocks.Branch.set_seed(0)
     expected = (
         'static int index_1034 = 0;\n'

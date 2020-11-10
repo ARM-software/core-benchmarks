@@ -59,11 +59,11 @@ class Callgraph:
         with open(path, 'rb') as f:
             if path.endswith('pb'):
                 cfg.ParseFromString(f.read())
-            elif path.endswith('pbtext'):
+            elif path.endswith('pbtxt'):
                 text_format.Parse(f.read(), cfg)
             else:
                 raise RuntimeError(
-                    'Invalid protobuf suffix found, expected .pb or .pbtext')
+                    'Invalid protobuf suffix found, expected .pb or .pbtxt')
         return cfg
 
     def format_vars_definition(self) -> str:
