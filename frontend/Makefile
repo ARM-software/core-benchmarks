@@ -18,7 +18,7 @@ test: all
 lint: all
 	pylint src/frontend tests/unit/*.py
 	mypy src/frontend  tests/unit/*.py
-	yapf --style=google -r src/frontend tests/ -q -p -e *pb2.py
+	yapf --style=google -r src/frontend tests/ -q -p -e "*pb2.py"
 
 install:
 	pip install --editable .
