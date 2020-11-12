@@ -13,6 +13,9 @@ import random
 import re
 from enum import Enum
 from typing import List, Optional, Iterable, Union, Dict, NamedTuple, Set, Callable
+from frontend.proto import cfg_pb2
+
+CACHELINE_SIZE = 64
 
 
 class BranchType(Enum):
@@ -128,20 +131,66 @@ class Branch:
         return paths
 
 
-class CodeBlockBody:
-    """Contains instructions."""
+class TargetType(Enum):
+    UNKNOWN = cfg_pb2.CodePrefetchInst.UNKNOWN
+    FUNCTION = cfg_pb2.CodePrefetchInst.FUNCTION
+    CODE_BLOCK = cfg_pb2.CodePrefetchInst.CODE_BLOCK
 
-    def __init__(self, name: int, instructions: str) -> None:
-        self.name: int = name
-        self.instructions: str = instructions
+
+class CodePrefetchInst:
+    """Prefetch instruction indication."""
+
+    def __init__(self, target_type: cfg_pb2.CodePrefetchInst.TargetTypeValue,
+                 target_name: int, degree: int) -> None:
+        self.type: TargetType = TargetType(target_type)
+        self.target_name: int = target_name
+        self.degree: int = degree
 
     def __str__(self) -> str:
-        return (f'CodeBlockBody(name: {self.name}, '
-                f'instructions: {self.instructions})')
+        return ('CodePrefetchInst('
+                f'type: {self.type}, '
+                f'target_name: {self.target_name}, '
+                f'degree: {self.degree}'
+                ')')
 
     @classmethod
-    def from_proto(cls, proto_cbb) -> CodeBlockBody:
-        return cls(name=proto_cbb.id, instructions=proto_cbb.instructions)
+    def from_proto(cls,
+                   proto_cpi: cfg_pb2.CodePrefetchInst) -> CodePrefetchInst:
+        return cls(proto_cpi.type, proto_cpi.target_id, proto_cpi.degree)
+
+
+class CodeBlockBody:
+    """Contains instructions or a prefetch hint."""
+
+    def __init__(self,
+                 name: int,
+                 instructions: Optional[str] = None,
+                 prefetch_inst: Optional[CodePrefetchInst] = None) -> None:
+        self.name: int = name
+        self.instructions: Optional[str] = instructions
+        self.prefetch_inst: Optional[CodePrefetchInst] = prefetch_inst
+
+    def __str__(self) -> str:
+        result = f'CodeBlockBody(name: {self.name}'
+        if self.instructions is not None:
+            result = f'{result}, instructions: {self.instructions}'
+        if self.prefetch_inst is not None:
+            result = f'{result}, prefetch_inst: {self.prefetch_inst}'
+        return f'{result})'
+
+    @classmethod
+    def from_proto(cls, proto_cbb: cfg_pb2.CodeBlockBody) -> CodeBlockBody:
+        if proto_cbb.HasField('instructions'):
+            return cls(name=proto_cbb.id, instructions=proto_cbb.instructions)
+        elif proto_cbb.HasField('code_prefetch'):
+            cpi = CodePrefetchInst.from_proto(proto_cbb.code_prefetch)
+            return cls(name=proto_cbb.id, prefetch_inst=cpi)
+        raise ValueError('Missing oneof field')
+
+    def get_instructions_if_set(self) -> str:
+        if self.instructions is not None:
+            return self.instructions
+        raise TypeError('Instructions requested but not set')
 
 
 class CodeBlock:
@@ -172,9 +221,6 @@ class CodeBlock:
                    code_block_body=code_block_body,
                    terminator_branch=branch,
                    unroll_factor=proto_cb.unroll_factor)
-
-    def get_instructions(self) -> str:
-        return self.code_block_body.instructions
 
     def get_branch_targets(self) -> List[Optional[int]]:
         return self.terminator_branch.get_targets()
@@ -221,7 +267,7 @@ class Function:
         return match.group(1)
 
     def get_signature_header(self) -> str:
-        return self.signature.get_instructions()
+        return self.signature.code_block_body.get_instructions_if_set()
 
     def get_branch_targets(
             self, branch_filter: Callable[[Branch],

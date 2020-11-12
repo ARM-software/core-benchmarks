@@ -1,0 +1,70 @@
+functions {
+  signature {
+    code_block_body_id: 2
+  }
+  instructions {
+    id: 4
+    code_block_body_id: 3
+  }
+  instructions {
+    id: 6
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 1
+      taken_probability: 1.0
+    }
+  }
+}
+functions {
+  id: 1
+  signature {
+    code_block_body_id: 7
+  }
+  instructions {
+    id: 8
+    code_block_body_id: 1
+    terminator_branch {
+      type: FALLTHROUGH
+    }
+  }
+}
+functions {
+  id: 9
+  signature {
+    code_block_body_id: 10
+  }
+  instructions {
+    id: 11
+    terminator_branch {
+      type: DIRECT_CALL
+      targets: 0
+      taken_probability: 1.0
+    }
+  }
+}
+code_block_bodies {
+  id: 1
+  instructions: "int x = 1;\nint y = x*x + 3;\nint z = y*x + 12345;\nint w = z*z + x - y;\n"
+}
+code_block_bodies {
+  id: 2
+  instructions: "void function_0"
+}
+code_block_bodies {
+  id: 3
+  code_prefetch {
+    type: FUNCTION
+    target_id: 1
+    degree: 2
+  }
+}
+code_block_bodies {
+  id: 7
+  instructions: "void function_1"
+}
+code_block_bodies {
+  id: 10
+  instructions: "void function_9"
+}
+entry_point_function: 9
+

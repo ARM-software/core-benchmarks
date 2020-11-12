@@ -5,6 +5,7 @@ import pytest
 import platform
 import glob
 import re
+from typing import List
 from filecmp import dircmp
 import sh  # type: ignore[import]
 from frontend.code_generator import user_callgraph
@@ -97,10 +98,7 @@ def test_branch_implicit_fallthrough(resources, tmpdir):
 
 
 def switch_processor(value1, value2):
-    processor = platform.processor()
-    if not processor:
-        # platform.processor() is not always populated.
-        processor = platform.machine()
+    processor = platform.machine()
     if processor == 'x86_64':
         return value1
     elif processor == 'aarch64':
@@ -108,16 +106,19 @@ def switch_processor(value1, value2):
     raise RuntimeError(f'Unrecognized processor: {processor}')
 
 
-def compile_and_check_function_for_asm(directory: str, function: str, asm: str):
-    output_file = compile_c_files(directory)
-    return check_for_asm(output_file, function, asm)
+def compile_and_check_function_for_asm(directory: str,
+                                       function: str,
+                                       asm: str,
+                                       make_flags: List[str] = None):
+    if make_flags is None:
+        make_flags = []
+    compile_c_files(directory, make_flags)
+    return check_for_asm(os.path.join(directory, 'benchmark'), function, asm)
 
 
-def compile_c_files(directory: str) -> str:
-    gcc = sh.Command('gcc')
-    output_file = f'{directory}/bin_output'
-    gcc('-o', output_file, '-O0', glob.glob(f'{directory}/*.c'))
-    return output_file
+def compile_c_files(directory: str, make_flags: List[str]) -> None:
+    make = sh.Command('make')
+    make('-C', directory, *make_flags)
 
 
 def check_for_asm(binary: str, symbol: str, asm: str) -> bool:
@@ -178,3 +179,26 @@ def test_dfs(resources, tmpdir, num_files):
             matches = re.findall(source_gen.get_header_import_string(),
                                  f.read())
             assert len(matches) == 1
+
+
+def test_prefetch_off(resources, tmpdir):
+    test_file = os.path.join(resources, 'prefetch_cb.pbtxt')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    source_gen = source_generator.SourceGenerator(tmpdir, cfg)
+    source_gen.write_files()
+    # Prefetch does not exist on x86, but we still want to ensure code compiles
+    result = compile_and_check_function_for_asm(tmpdir, 'function_0', 'prfm')
+    if platform.machine() == 'aarch64':
+        assert not result
+
+
+def test_prefetch_on(resources, tmpdir):
+    test_file = os.path.join(resources, 'prefetch_cb.pbtxt')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    source_gen = source_generator.SourceGenerator(tmpdir, cfg)
+    source_gen.write_files()
+    # Prefetch does not exist on x86, but we still want to ensure code compiles
+    result = compile_and_check_function_for_asm(tmpdir, 'function_0', 'prfm',
+                                                ['ENABLE_PREFETCH=yes'])
+    if platform.machine() == 'aarch64':
+        assert result

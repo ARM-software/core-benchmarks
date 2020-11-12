@@ -137,12 +137,19 @@ class SourceGenerator:
         with open(makefile_path, 'w') as f:
             dependencies = self.get_object_files_to_c_files_mapping(
                 function_files)
+            prefetch_ifdef = ('ifdef ENABLE_PREFETCH\n'
+                              '\tDENABLE_PREFETCH = -DENABLE_CODE_PREFETCH\n'
+                              'endif\n\n')
+            cflags = ['$(DENABLE_PREFETCH)', '-O0']
+            cflags_str = ' '.join(cflags)
             obj_files = ' '.join(dependencies.keys())
-            string = (f'{self.benchmark_name}: {obj_files}\n'
-                      f'\tgcc -o {self.benchmark_name} {obj_files} -O0\n\n')
+            string = (
+                f'{prefetch_ifdef}'
+                f'{self.benchmark_name}: {obj_files}\n'
+                f'\tgcc -o {self.benchmark_name} {obj_files} {cflags_str}\n\n')
             for obj_file, c_file in dependencies.items():
                 string += f'{obj_file}: {c_file}\n'
-                string += f'\tgcc -c -o {obj_file} {c_file} -O0\n\n'
+                string += f'\tgcc -c -o {obj_file} {c_file} {cflags_str}\n\n'
             string += f'clean:\n\trm *.o {self.benchmark_name}\n'
             f.write(string)
 

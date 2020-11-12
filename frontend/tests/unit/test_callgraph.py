@@ -99,6 +99,80 @@ def test_print_function_onecallchain(resources):
     assert cfg.format_function(3) == expected_3
 
 
+def test_format_function_prefetch_codeblock(resources):
+    test_file = os.path.join(resources, 'prefetch_cb.pbtxt')
+    expected = ('void function_0() {\n'
+                'label4:;\n'
+                '#ifdef ENABLE_CODE_PREFETCH\n'
+                '#ifdef __aarch64__\n'
+                'asm (\n'
+                '"PRFM PLIL1KEEP, [%0]\\n\\t"\n'
+                '::"r"(&&label6): );\n'
+                '#endif\n'
+                '#endif\n'
+                'label6:;\n'
+                'function_1();\n'
+                '}\n')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    assert cfg.format_function(0) == expected
+
+
+def test_format_function_prefetch_codeblock_degree(resources):
+    test_file = os.path.join(resources, 'prefetch_cb_degree.pbtxt')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    expected = ('void function_0() {\n'
+                'label4:;\n'
+                '#ifdef ENABLE_CODE_PREFETCH\n'
+                '#ifdef __aarch64__\n'
+                'asm (\n'
+                '"PRFM PLIL1KEEP, [%0]\\n\\t"\n'
+                '"PRFM PLIL1KEEP, [%0, #64]\\n\\t"\n'
+                '::"r"(&&label6): );\n'
+                '#endif\n'
+                '#endif\n'
+                'label6:;\n'
+                'function_1();\n'
+                '}\n')
+    assert cfg.format_function(0) == expected
+
+
+def test_format_function_prefetch_function(resources):
+    test_file = os.path.join(resources, 'prefetch_func.pbtxt')
+    expected = ('void function_0() {\n'
+                'label4:;\n'
+                '#ifdef ENABLE_CODE_PREFETCH\n'
+                '#ifdef __aarch64__\n'
+                'asm (\n'
+                '"PRFM PLIL1KEEP, [%0]\\n\\t"\n'
+                '::"r"(&function_1): );\n'
+                '#endif\n'
+                '#endif\n'
+                'label6:;\n'
+                'function_1();\n'
+                '}\n')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    assert cfg.format_function(0) == expected
+
+
+def test_format_function_prefetch_function_degree(resources):
+    test_file = os.path.join(resources, 'prefetch_func_degree.pbtxt')
+    expected = ('void function_0() {\n'
+                'label4:;\n'
+                '#ifdef ENABLE_CODE_PREFETCH\n'
+                '#ifdef __aarch64__\n'
+                'asm (\n'
+                '"PRFM PLIL1KEEP, [%0]\\n\\t"\n'
+                '"PRFM PLIL1KEEP, [%0, #64]\\n\\t"\n'
+                '::"r"(&function_1): );\n'
+                '#endif\n'
+                '#endif\n'
+                'label6:;\n'
+                'function_1();\n'
+                '}\n')
+    cfg = user_callgraph.Callgraph.from_proto(test_file)
+    assert cfg.format_function(0) == expected
+
+
 def test_get_formatted_headers_onefunction(resources):
     test_file = os.path.join(resources, 'onefunction.pbtxt')
     expected = 'void function_19();\n'

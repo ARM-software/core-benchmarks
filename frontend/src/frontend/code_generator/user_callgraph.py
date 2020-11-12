@@ -19,9 +19,13 @@ class Callgraph:
             f.write(cg.format_function(1))
     """
 
-    def __init__(self, functions: Dict[int, blocks.Function], entry_point: int,
-                 global_vars_decl: blocks.CodeBlock,
-                 global_vars_def: blocks.CodeBlock) -> None:
+    def __init__(
+        self,
+        functions: Dict[int, blocks.Function],
+        entry_point: int,
+        global_vars_decl: blocks.CodeBlock,
+        global_vars_def: blocks.CodeBlock,
+    ) -> None:
         self.entry_point: int = entry_point
         self.global_vars_decl: blocks.CodeBlock = global_vars_decl
         self.global_vars_def: blocks.CodeBlock = global_vars_def
@@ -70,7 +74,41 @@ class Callgraph:
         return self.format_code_block_body(self.global_vars_def)
 
     def format_code_block_body(self, code_block: blocks.CodeBlock) -> str:
-        return code_block.get_instructions()
+        # code block body contains either instructions or a prefetch
+        cbb = code_block.code_block_body
+        if cbb.instructions is not None:
+            return cbb.instructions
+        elif cbb.prefetch_inst is not None:
+            return self.format_code_prefetch_instruction(cbb.prefetch_inst)
+        else:
+            raise TypeError('Code block missing instructions or prefetch_inst')
+
+    def format_code_prefetch_instruction(
+            self, code_prefetch: blocks.CodePrefetchInst) -> str:
+        if code_prefetch.type == blocks.TargetType.FUNCTION:
+            target_symbol = self.function_call_signature_for(
+                code_prefetch.target_name)
+        elif code_prefetch.type == blocks.TargetType.CODE_BLOCK:
+            target_symbol = '&' + self.format_code_block_label(
+                self.code_blocks[code_prefetch.target_name])
+        prefetch_string = self._create_prefetch_aarch64_string(
+            code_prefetch.degree, target_symbol)
+        result = ('#ifdef ENABLE_CODE_PREFETCH\n'
+                  '#ifdef __aarch64__\n'
+                  f'{prefetch_string}'
+                  '#endif\n'
+                  '#endif\n')
+        return result
+
+    def _create_prefetch_aarch64_string(self, degree: int,
+                                        target_symbol: str) -> str:
+        prefetch = ['"PRFM PLIL1KEEP, [%0]\\n\\t"\n']
+        for i in range(1, degree):
+            offset = i * blocks.CACHELINE_SIZE
+            prefetch.append(f'"PRFM PLIL1KEEP, [%0, #{offset}]\\n\\t"\n')
+        prefetch_str = ''.join(prefetch)
+        result = ('asm (\n' f'{prefetch_str}' f'::"r"(&{target_symbol}): );\n')
+        return result
 
     def function_call_signature_for(self, function_name: int) -> str:
         return self.get_function(function_name).get_call_signature()
