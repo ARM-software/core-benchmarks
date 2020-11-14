@@ -81,37 +81,6 @@ class InstPointerChaseGenerator(common.BaseGenerator):
             'There should be exactly one caller2callee mapping for every '
             'function.')
 
-    def _add_code_prefetch_code_block(self,
-                                      function_id: Optional[int] = None,
-                                      code_block_id: Optional[int] = None,
-                                      degree: int = 1) -> cfg_pb2.CodeBlock:
-        """Create a code prefetch code block.
-
-        The target address to prefetch is specified by either function_id or
-        code_block_id, which also indicate what the target type is. Only one of
-        these can be specified.
-        """
-        if function_id is not None and code_block_id is not None:
-            raise ValueError(
-                'cannot specify both function_id and code_block_id')
-        if degree <= 0:
-            raise ValueError('prefetch degree must be > 0')
-        prefetch_inst = self._add_code_block_body()
-        if function_id is not None:
-            prefetch_inst.code_prefetch.type = \
-                cfg_pb2.CodePrefetchInst.TargetType.FUNCTION
-            prefetch_inst.code_prefetch.target_id = function_id
-        elif code_block_id is not None:
-            prefetch_inst.code_prefetch.type = \
-                cfg_pb2.CodePrefetchInst.TargetType.CODE_BLOCK
-            prefetch_inst.code_prefetch.target_id = code_block_id
-        else:
-            raise ValueError('must specify one of function_id or code_block_id')
-        prefetch_inst.code_prefetch.degree = degree
-        prefetch_body = self._add_code_block()
-        prefetch_body.code_block_body_id = prefetch_inst.id
-        return prefetch_body
-
     def _generate_callchain_functions(self) -> None:
         # First, generate codeblocks. Each function has two: the main body, with
         # a fallthrough branch, and the call, with a return terminator branch.

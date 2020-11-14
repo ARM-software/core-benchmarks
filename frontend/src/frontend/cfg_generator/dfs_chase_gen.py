@@ -28,13 +28,19 @@ def register_args(parser):
                            default=0.5,
                            type=float,
                            help='Branch taken probability.')
+    subparser.add_argument('--insert_code_prefetches',
+                           default=False,
+                           action='store_true',
+                           help='Insert code prefetches into the '
+                           'callchains. Not available on all platforms.')
 
 
 class DFSChaseGenerator(common.BaseGenerator):
     """Generates a DFS instruction pointer chase benchmark."""
 
     def __init__(self, depth: int, use_indirect_calls: bool,
-                 left_path_probability: float) -> None:
+                 left_path_probability: float,
+                 insert_code_prefetches: bool) -> None:
         """Constructs a DFS pointer chase generator.
 
         Args:
@@ -52,6 +58,7 @@ class DFSChaseGenerator(common.BaseGenerator):
         self._leaf_functions: List[int] = []
         # ID of the function at the root of the function tree.
         self._root_func: int = 0
+        self._insert_code_prefetches: bool = insert_code_prefetches
         self._left_path_probability: float = left_path_probability
         self._use_indirect_calls: bool = use_indirect_calls
         self._function_body: cfg_pb2.CodeBlockBody = self._add_code_block_body(
@@ -74,9 +81,9 @@ class DFSChaseGenerator(common.BaseGenerator):
             block.terminator_branch.taken_probability.append(probability)
         return block
 
-    def _generate_indirect_call_code_block(
+    def _generate_indirect_call_code_blocks(
             self, call_targets: List[int],
-            callee_probability: float) -> cfg_pb2.CodeBlock:
+            callee_probability: float) -> List[cfg_pb2.CodeBlock]:
         """Generates a single CodeBlock that indirectly calls 2 targets.
 
         Since we're using indirect calls here, we don't need to encode
@@ -93,15 +100,28 @@ class DFSChaseGenerator(common.BaseGenerator):
         if len(call_targets) != 2:
             raise ValueError('call_targets must have length 2, got %d' %
                              len(call_targets))
+        code_blocks: List[cfg_pb2.CodeBlock] = []
 
-        block = self._add_code_block()
-        block.terminator_branch.type = cfg_pb2.Branch.BranchType.INDIRECT_CALL
+        # We don't know which target we're going to call, so prefetch all of
+        # them.
+        if self._insert_code_prefetches:
+            for target in call_targets:
+                code_blocks.append(
+                    self._add_code_prefetch_code_block(function_id=target))
+
+        call_block = self._add_code_block()
+        call_block.terminator_branch.type = \
+            cfg_pb2.Branch.BranchType.INDIRECT_CALL
         for target in call_targets:
-            block.terminator_branch.targets.append(target)
-        block.terminator_branch.taken_probability.append(callee_probability)
-        block.terminator_branch.taken_probability.append(1.0 -
-                                                         callee_probability)
-        return block
+            call_block.terminator_branch.targets.append(target)
+        call_block.terminator_branch.taken_probability.append(
+            callee_probability)
+        call_block.terminator_branch.taken_probability.append(
+            1.0 - callee_probability)
+        call_block.code_block_body_id = self._function_body.id
+        code_blocks.append(call_block)
+
+        return code_blocks
 
     def _generate_conditional_branch_code_blocks(
             self, call_targets: List[int],
@@ -114,6 +134,20 @@ class DFSChaseGenerator(common.BaseGenerator):
         if len(call_targets) != 2:
             raise ValueError('call_targets must have length 2, got %d' %
                              len(call_targets))
+        code_blocks: List[cfg_pb2.CodeBlock] = []
+
+        # We have a few options for where to put the code prefetch, but we have
+        # to execute it before the function body. So we either:
+        #   1. Prefetch both, knowing that only one will be useful.
+        #   2. Duplicate the function body in both sides of the branch.
+        # Prefetching both is easier, and also acts as a model for more
+        # realistic scenarios in which we have to prefetch far in advance of
+        # knowing the control flow for sure.
+        if self._insert_code_prefetches:
+            code_blocks.append(
+                self._add_code_prefetch_code_block(function_id=call_targets[0]))
+            code_blocks.append(
+                self._add_code_prefetch_code_block(function_id=call_targets[1]))
 
         # Conditional branch taken path.
         taken_block = self._add_code_block_with_branch(
@@ -132,10 +166,13 @@ class DFSChaseGenerator(common.BaseGenerator):
             probability)
         cond_block.code_block_body_id = self._function_body.id
 
+        code_blocks.append(cond_block)
         # Fallthrough must come right after the conditional branch.
-        return [
-            cond_block, ft_block, ft_block_ret, taken_block, taken_block_ret
-        ]
+        code_blocks.append(ft_block)
+        code_blocks.append(ft_block_ret)
+        code_blocks.append(taken_block)
+        code_blocks.append(taken_block_ret)
+        return code_blocks
 
     def _generate_leaf_function_code_blocks(self) -> cfg_pb2.CodeBlock:
         codeblock = self._add_code_block()
@@ -165,8 +202,8 @@ class DFSChaseGenerator(common.BaseGenerator):
             for callee in callees:
                 self._add_function_with_id(callee)
             if self._use_indirect_calls:
-                self._functions[caller].instructions.append(
-                    self._generate_indirect_call_code_block(
+                self._functions[caller].instructions.extend(
+                    self._generate_indirect_call_code_blocks(
                         callees, self._left_path_probability))
             else:
                 self._functions[caller].instructions.extend(
@@ -188,5 +225,6 @@ def generate_cfg(args):
     """Generate a CFG of arbitrary callchains."""
     print('Generating DFS instruction pointer chase benchmark...')
     generator = DFSChaseGenerator(args.depth, args.use_indirect_calls,
-                                  args.branch_probability)
+                                  args.branch_probability,
+                                  args.insert_code_prefetches)
     return generator.generate_cfg()
