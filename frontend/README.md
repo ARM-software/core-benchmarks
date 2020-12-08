@@ -16,9 +16,10 @@ The code generator takes a CFG protobuf as input, and produces a set of .c files
 
 ## Using
 
-Install pip packages. Recommended to use virtualenv.
+Install pip packages and build the protocol buffer libraries. Recommended to use virtualenv.
 
     $ make init
+    $ make all
 
 Generate the cfg protobuf. First argument is what generator to use.
 
