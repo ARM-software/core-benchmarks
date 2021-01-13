@@ -146,10 +146,11 @@ class SourceGenerator:
             string = (
                 f'{prefetch_ifdef}'
                 f'{self.benchmark_name}: {obj_files}\n'
-                f'\tgcc -o {self.benchmark_name} {obj_files} {cflags_str}\n\n')
+                f'\t$(CC) -o {self.benchmark_name} {obj_files} {cflags_str}\n'
+                '\n')
             for obj_file, c_file in dependencies.items():
                 string += f'{obj_file}: {c_file}\n'
-                string += f'\tgcc -c -o {obj_file} {c_file} {cflags_str}\n\n'
+                string += f'\t$(CC) -c -o {obj_file} {c_file} {cflags_str}\n\n'
             string += f'clean:\n\trm *.o {self.benchmark_name}\n'
             f.write(string)
 

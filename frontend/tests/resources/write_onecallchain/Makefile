@@ -3,13 +3,13 @@ ifdef ENABLE_PREFETCH
 endif
 
 benchmark: 0.o main.o
-	gcc -o benchmark 0.o main.o $(DENABLE_PREFETCH) -O0
+	$(CC) -o benchmark 0.o main.o $(DENABLE_PREFETCH) -O0
 
 0.o: 0.c
-	gcc -c -o 0.o 0.c $(DENABLE_PREFETCH) -O0
+	$(CC) -c -o 0.o 0.c $(DENABLE_PREFETCH) -O0
 
 main.o: main.c
-	gcc -c -o main.o main.c $(DENABLE_PREFETCH) -O0
+	$(CC) -c -o main.o main.c $(DENABLE_PREFETCH) -O0
 
 clean:
 	rm *.o benchmark
